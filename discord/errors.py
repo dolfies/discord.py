@@ -29,7 +29,8 @@ from typing import TYPE_CHECKING, Any, Dict, Final, List, Optional, Tuple, Union
 from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
-    from aiohttp import ClientResponse, ClientWebSocketResponse
+    from aiohttp import ClientResponse
+    from curl_cffi.requests import Response as CurlResponse, WebSocket
     from requests import Response
     from typing_extensions import TypeGuard
 
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
         FormErrorWrapper as FormErrorWrapperPayload,
     )
 
-    _ResponseType = Union[ClientResponse, Response]
+    _ResponseType = Union[ClientResponse, CurlResponse, Response]
 
 __all__ = (
     'DiscordException',
@@ -116,10 +117,10 @@ class HTTPException(DiscordException):
 
     Attributes
     ------------
-    response: :class:`aiohttp.ClientResponse`
-        The response of the failed HTTP request. This is an
-        instance of :class:`aiohttp.ClientResponse`. In some cases
-        this could also be a :class:`requests.Response`.
+    response: Union[:class:`curl_cffi.requests.Response`, :class:`aiohttp.ClientResponse`]
+        The response of the failed HTTP request. This is an instance of
+        :class:`curl_cffi.requests.Response` or :class:`aiohttp.ClientResponse`.
+        In some cases this could also be a :class:`requests.Response`.
     text: :class:`str`
         The text of the error. Could be an empty string.
     status: :class:`int`
@@ -321,10 +322,9 @@ class ConnectionClosed(ClientException):
 
     __slots__ = ('code', 'reason')
 
-    def __init__(self, socket: ClientWebSocketResponse, *, code: Optional[int] = None):
+    def __init__(self, code: Optional[int] = None, reason: Optional[str] = None):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
-        self.code: int = code or socket.close_code or -1
-        # aiohttp doesn't seem to consistently provide close reason
-        self.reason: str = ''
-        super().__init__(f'WebSocket closed with {self.code}')
+        self.code: int = code or -1
+        self.reason: str = reason or 'unknown'
+        super().__init__(f'WebSocket closed with {self.code} (reason: {self.reason!r})')

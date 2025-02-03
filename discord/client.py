@@ -163,6 +163,10 @@ class Client:
 
     A number of options can be passed to the :class:`Client`.
 
+    .. versionchanged:: 2.1
+
+        Removed the ``http_trace`` parameter.
+
     Parameters
     -----------
     max_messages: Optional[:class:`int`]
@@ -260,12 +264,6 @@ class Client:
         The default behavior is ``True`` (what the client does).
 
         .. versionadded:: 2.0
-    http_trace: :class:`aiohttp.TraceConfig`
-        The trace configuration to use for tracking HTTP requests the library does using ``aiohttp``.
-        This allows you to check requests the library is using. For more information, check the
-        `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
-
-        .. versionadded:: 2.0
     captcha_handler: Optional[Callable[[:class:`.CaptchaRequired`, :class:`.Client`], Awaitable[:class:`str`]]
         A function that solves captcha challenges.
 
@@ -303,7 +301,6 @@ class Client:
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
         max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.captcha_handler: Optional[Callable[[CaptchaRequired, Client], Awaitable[str]]] = options.pop(
             'captcha_handler', None
@@ -312,7 +309,6 @@ class Client:
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
-            http_trace=http_trace,
             captcha=self.handle_captcha,
             max_ratelimit_timeout=max_ratelimit_timeout,
             locale=lambda: self._connection.locale,
