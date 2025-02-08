@@ -55,6 +55,10 @@ class ActivityTimestamps(TypedDict, total=False):
     end: int
 
 
+class ActivityButton(TypedDict, total=False):
+    button_urls: List[str]
+
+
 class ActivityParty(TypedDict, total=False):
     id: str
     size: List[int]

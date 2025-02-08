@@ -98,6 +98,7 @@ if TYPE_CHECKING:
         ActivityAssets,
         ActivityParty,
         ActivityTimestamps,
+        ActivityButton,
     )
     from .types.gateway import Session as SessionPayload
 
@@ -195,7 +196,10 @@ class Activity(BaseActivity):
         A list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
+    metadata: :class:`dict`
+        A dictionary of metadata. It contains the following optional keys:
 
+        - ``button_urls``: A list of strings representing the links of the buttons.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji that belongs to this activity.
     """
@@ -234,7 +238,7 @@ class Activity(BaseActivity):
         self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
         self.buttons: Optional[List[str]] = kwargs.pop('buttons', None)
-        self.metadata: Optional[dict] = kwargs.pop('metadata', None)
+        self.metadata: ActivityButton = kwargs.pop('metadata', {})
 
         activity_type = kwargs.pop('type', -1)
         self.type: ActivityType = (
@@ -254,6 +258,7 @@ class Activity(BaseActivity):
             ('application_id', self.application_id),
             ('session_id', self.session_id),
             ('emoji', self.emoji),
+            ('metadata', self.metadata),
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Activity {inner}>'
@@ -269,6 +274,7 @@ class Activity(BaseActivity):
             and other.session_id == self.session_id
             and other.sync_id == self.sync_id
             and other.start == self.start
+            and other.metadata == self.metadata
         )
 
     def __ne__(self, other):
@@ -310,6 +316,16 @@ class Activity(BaseActivity):
         else:
             return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
+    @property
+        def button_urls(self) -> Optional[list]:
+            """Optional[:class:`str`]: Returns a list of URLs pointing to the URLs of the buttons, if applicable."""
+            try:
+                metadata = self.metadata['button_urls']
+            except KeyError:
+                return None
+            else:
+                return metadata
+    
     @property
     def large_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
